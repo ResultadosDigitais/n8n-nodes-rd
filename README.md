@@ -1,82 +1,119 @@
-# Name of Project
+# n8n-nodes-rd
 
-The first phrase should describe the project briefly, for example, this is the main template to be used by all RD Github Repositories. 
+Community node to integrate n8n with **RD Station**.
 
-Second paragraph is dedicated to describe it: What this library/api/whatever does and what does not. 
-What the advantagens of this project? Why use it instead another public library. For example, 
-by using this api, we abstract what log library is used in order to provide a simple interface 
-to developers that wants to log into pre-defined formats.  
+This package adds two nodes to n8n:
 
-## Audience
+- **RD Station CRM**: read/write operations for CRM resources.
+- **RD Station CRM Trigger**: trigger workflows from RD Station CRM webhook events.
 
-Describe here the main audience from this project. Eg: This Template is designed for Developers or Tech Leaders. 
+## Implemented resources
 
-## Useful terminology
+| Resource                  | Operations                                                    |
+| ------------------------- | ------------------------------------------------------------- |
+| Deals                     | Create, Get Many, Update                                      |
+| Contacts                  | Get Many, Get, Create, Update                                 |
+| Companies (Organizations) | Get Many, Get, Create, Update                                 |
+| Tasks                     | Get Many, Get, Create, Update                                 |
+| Products                  | Get Many, Get, Create, Update                                 |
+| Webhooks                  | Create, Delete, Get, Get Many, Update                         |
+| Metadata (Config)         | Get Pipelines, Get Custom Fields, Get Users, Get Deal Sources |
 
-Lists definitions of terms that the reader needs to know to follow the tutorial. For example: what is lead? what is a conversion? You include charts here
+### `RD Station CRM Trigger` events
 
-![pretty-diagram](https://user-images.githubusercontent.com/18356186/54356236-e163b900-4639-11e9-9bb1-e171bcd2a025.png)
+- `crm_contact_created`
+- `crm_contact_updated`
+- `crm_deal_created`
+- `crm_deal_updated`
+- `crm_organization_created`
+- `crm_organization_updated`
 
-## Getting started
+## Authentication
 
-### Requirements
+Credential: **RD Station CRM (OAuth2)**.
 
-Lists concepts the reader should be familiar with prior to starting, as well as any software or hardware requirements. 
-If possible, please create a link to instalation documentation or use it inline.
+- Supports **Staging** and **Production** environments.
+- OAuth2 URLs are automatically adjusted based on the selected environment.
+- API base URL used by the node:
+  - Production: `https://api.rd.services/crm/v2`
+  - Staging: `https://api-staging.rd.services/crm/v2`
 
-* [rd-docker installed](https://oraculo.rdstation.com.br/referencias/wiki/como-configurar-o-ambiente-de-desenvolvimento-utilizando-docker)
-* Rails v6.2 installed
-* Ruby v2.7.x installed
-* Any of my dependencies up and running:
+Official API documentation:
+
+- <https://developers.rdstation.com/reference>
+
+## Installation
+
+In n8n (Community Nodes):
+
+1. Go to **Settings** > **Community Nodes**.
+2. Click **Install**.
+3. Enter the package name: `n8n-nodes-rdstation-crm`.
+4. Complete installation and reload the editor if needed.
+
+## Quick start
+
+### 1) List contacts
+
+- Node: `RD Station CRM`
+- Resource: `Contact`
+- Operation: `Get Many`
+- Optional: apply RDQL filters (name, email, date, custom field, etc.)
+
+### 2) Create deal
+
+- Node: `RD Station CRM`
+- Resource: `Deal`
+- Operation: `Create`
+- Minimum fields: `Name`, `Owner ID`
+
+### 3) Trigger workflow on deal update
+
+- Node: `RD Station CRM Trigger`
+- Event: `Deal Updated`
+- Optional: configure `Authentication Header` + `Authentication Key`
+
+## Filters, pagination, and validations
+
+- List operations support `Return All`, `Limit`, and `Page Size`.
+- Resources use field-based RDQL filters (including custom fields by slug when applicable).
+- Primary entity IDs (deals, contacts, companies, products, etc.) are validated as **24-hex**.
+- Webhook IDs in the `Webhook` resource are validated as **UUID**.
+- In webhook settings, `Authentication Header` and `Authentication Key` must be provided together.
+- For `Deal > Create`, the allowed creation status is `ongoing`.
+
+## Local development
 
 ```bash
-$ gem install my_dep_here
+npm install
+npm run build
+npm run dev
+npm run lint
 ```
 
-### Running in Local Environment
+## Quality and publishing (Verified Community Node checklist)
 
-Provide description how to run locally but also command lines:
+Based on the community node publishing reference and n8n ecosystem guidelines, this package should maintain:
 
-1. Start Container
-```bash
-$ rd-docker s
-```
-2. Access http://localhost:8008
+1. **Code transparency**
+   - Public GitHub repository.
+   - Clear, auditable node source code and README.
+2. **Package identity**
+   - Package name following the community node pattern (`n8n-nodes-*`).
+   - Consistent metadata in `package.json` (keywords, license, nodes, credentials).
+3. **Documentation**
+   - README with credentials, operations, examples, and limitations.
+4. **Quality**
+   - Run local linting and review before publishing.
+   - (Optional) community package scanner:
 
-3. Login using default credentials:
-* Username: my_user
-* Password: my_pass
+     ```bash
+     npx @n8n/scan-community-package n8n-nodes-rdstation-crm
+     ```
 
-### Running Tests
+5. **Submission**
+   - Publish to npm and submit via the n8n Creator Portal with the correct links.
 
-Provide description how to run tests locally. Command lines are really important:
+## License
 
-```bash
-$ rd-docker c
-$ rspec .
-```
-
-### Runing in Production environment
-
-Explains how to run in production environment and apply your changes too.
-
-1. Access [Spinnaker](https://spinnaker.rdops.systems/#/applications/my-app/clusters);
-2. Go to Pipelines on left menu. Click on em `Start Manual Execution` on disered execution
-
-<img src="https://user-images.githubusercontent.com/9935397/82076477-48548600-96b4-11ea-8a13-84e14f6463b0.png" height="300">
-
-3. Choose the branch
-
-<img src="https://user-images.githubusercontent.com/9935397/82076681-979ab680-96b4-11ea-948f-974a3d518378.png" height="300">
-
-4. Click on Run. 
-5. Wait until finished
-6. Test it using [Production URL](https://www.google.com)
-7. Click on Continue to merge it
-
-## What's next (Optional)
-
-* Bullet points
-* That you believe
-* Are the next steps
-* But don't try to predict all your future
+[MIT](./LICENSE)

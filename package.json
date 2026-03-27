@@ -1,0 +1,49 @@
+{
+  "name": "n8n-nodes-rd",
+  "version": "0.0.1",
+  "description": "n8n nodes for RD Station",
+  "author": {
+    "name": "Connect Think"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ResultadosDigitais/n8n-nodes-rd.git"
+  },
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "rd-station",
+    "rd-station-crm"
+  ],
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "dist/nodes/RdStationCrm/RdStationCrm.node.js",
+  "scripts": {
+    "build": "n8n-node build",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "nodes": [
+      "dist/nodes/RdStationCrm/RdStationCrm.node.js",
+      "dist/nodes/RdStationCrmTrigger/RdStationCrmTrigger.node.js"
+    ],
+    "credentials": [
+      "dist/nodes/RdStationCrm/RdStationCrmApi.credentials.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "*",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
