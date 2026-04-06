@@ -3,7 +3,8 @@
   "version": "0.0.2",
   "description": "n8n nodes for RD Station",
   "author": {
-    "name": "Resultados Digitais"
+    "name": "Resultados Digitais",
+    "email": "ia@rdstation.com"
   },
   "repository": {
     "type": "git",
