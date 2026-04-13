@@ -1,4 +1,4 @@
-import type { ICredentialType, INodeProperties, Icon } from 'n8n-workflow';
+import type { ICredentialTestRequest, ICredentialType, INodeProperties, Icon } from 'n8n-workflow';
 
 export class RdStationCrmApi implements ICredentialType {
 	name = 'rdStationCrmApi';
@@ -65,4 +65,13 @@ export class RdStationCrmApi implements ICredentialType {
 			default: 'header',
 		},
 	];
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL:
+				'={{ $credentials?.environment === "production" ? "https://api.rd.services/crm/v2" : "https://api-staging.rd.services/crm/v2" }}',
+			url: '/users',
+			method: 'GET',
+		},
+	};
 }
