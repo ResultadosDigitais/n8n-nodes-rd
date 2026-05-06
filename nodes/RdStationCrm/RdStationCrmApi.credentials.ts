@@ -44,7 +44,7 @@ export class RdStationCrmApi implements ICredentialType {
 			type: 'hidden',
 			required: true,
 			default:
-				'={{ $self["environment"] === "production" ? "https://api.rd.services/oauth2/token" : "https://api-staging.rd.services/oauth2/token" }}',
+				'={{ $self["environment"] === "production" ? "https://api.rd.services/oauth2/token" : "https://api-staging.rd.services/oauth/token" }}',
 		},
 		{
 			displayName: 'Scope',

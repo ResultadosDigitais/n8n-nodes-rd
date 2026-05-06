@@ -4,8 +4,9 @@ import type {
 	IHttpRequestOptions,
 	ILoadOptionsFunctions,
 	INodePropertyOptions,
+	JsonObject,
 } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 import { getRdCrmBaseUrl } from '../Helpers';
 
 interface RdCrmListResponse {
@@ -237,21 +238,7 @@ async function rdCrmRequest<T = unknown>(
 			] as unknown as T;
 		}
 
-		const statusCode = requestError.statusCode ?? requestError.response?.status;
-		const responseBody = requestError.response?.body ?? requestError.response?.data ?? requestError.description;
-		throw new NodeOperationError(
-			context.getNode(),
-			`HTTP ${statusCode ?? '???'} - ${requestError.message ?? 'The service was not able to process your request'}`,
-			{
-				itemIndex,
-				description:
-					typeof responseBody === 'string'
-						? responseBody
-						: responseBody
-							? JSON.stringify(responseBody)
-							: undefined,
-			},
-		);
+		throw new NodeApiError(context.getNode(), error as JsonObject, { itemIndex });
 	}
 }
 
@@ -268,17 +255,7 @@ async function rdCrmRequestLoadOptions<T = unknown>(
 
 		return (response?.body ?? response) as T;
 	} catch (error: unknown) {
-		const requestError = (error ?? {}) as RdCrmRequestError;
-		const statusCode = requestError.statusCode ?? requestError.response?.status;
-		const responseBody = requestError.response?.body ?? requestError.response?.data ?? requestError.description;
-		throw new NodeOperationError(context.getNode(), `Failed to load options (HTTP ${statusCode ?? '???'})`, {
-			description:
-				typeof responseBody === 'string'
-					? responseBody
-					: responseBody
-						? JSON.stringify(responseBody)
-						: undefined,
-		});
+		throw new NodeApiError(context.getNode(), error as JsonObject);
 	}
 }
 
