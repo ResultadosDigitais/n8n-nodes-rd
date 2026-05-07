@@ -1,6 +1,24 @@
-import type { IDataObject, IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
-import { getRdCrmBaseUrl, rdCrmRequest } from '../Helpers';
+import type { IDataObject, IExecuteFunctions, IHttpRequestOptions, JsonObject } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
+import { getRdCrmBaseUrl } from '../Helpers';
+
+async function rdCrmRequest<T = unknown>(
+	context: IExecuteFunctions,
+	options: IHttpRequestOptions,
+	itemIndex: number,
+): Promise<T> {
+	try {
+		const response = await context.helpers.httpRequestWithAuthentication.call(context, 'rdStationCrmApi', {
+			...options,
+			json: true,
+			returnFullResponse: true,
+		});
+
+		return (response?.body ?? response) as T;
+	} catch (error: unknown) {
+		throw new NodeApiError(context.getNode(), error as JsonObject, { itemIndex });
+	}
+}
 
 async function listGeneric(
 	context: IExecuteFunctions, 
@@ -18,9 +36,7 @@ async function listGeneric(
 		json: true,
 	};
 
-	const response = await rdCrmRequest(context, 'rdStationCrmApi', options);
-
-	if ((response as IDataObject)._error_debug) return [response as IDataObject];
+	const response = await rdCrmRequest<IDataObject | IDataObject[]>(context, options, itemIndex);
 
 	let batch: IDataObject[] = [];
 	if (response && typeof response === 'object') {

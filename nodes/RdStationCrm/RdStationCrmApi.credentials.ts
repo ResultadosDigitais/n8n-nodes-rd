@@ -28,7 +28,7 @@ export class RdStationCrmApi implements ICredentialType {
 					value: 'production',
 				},
 			],
-			default: 'staging',
+			default: 'production',
 		},
 		{
 			displayName: 'Authorization URL',
@@ -44,7 +44,7 @@ export class RdStationCrmApi implements ICredentialType {
 			type: 'hidden',
 			required: true,
 			default:
-				'={{ $self["environment"] === "production" ? "https://api.rd.services/oauth2/token" : "https://api-staging.rd.services/oauth/token" }}',
+				'={{ $self["environment"] === "production" ? "https://api.rd.services/oauth2/token" : "https://api-staging.rd.services/oauth2/token" }}',
 		},
 		{
 			displayName: 'Scope',
@@ -62,7 +62,7 @@ export class RdStationCrmApi implements ICredentialType {
 			displayName: 'Authentication',
 			name: 'authentication',
 			type: 'hidden',
-			default: 'header',
+			default: 'body',
 		},
 	];
 

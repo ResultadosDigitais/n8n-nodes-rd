@@ -63,11 +63,21 @@ function quoteRdqlString(value: string): string {
 	return v;
 }
 
+function pad2(n: number): string {
+	return String(n).padStart(2, '0');
+}
+
 function formatRdqlDateTime(value: string): string {
 	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) return quoteRdqlString(value);
-	const iso = date.toISOString().replace('T', ' ').replace('Z', '');
-	return quoteRdqlString(iso);
+	if (Number.isNaN(date.getTime())) return '""';
+	const yyyy = date.getFullYear();
+	const mm = pad2(date.getMonth() + 1);
+	const dd = pad2(date.getDate());
+	const hh = pad2(date.getHours());
+	const mi = pad2(date.getMinutes());
+	const ss = pad2(date.getSeconds());
+	// RDQL DateTime examples use "YYYY-MM-DD HH:MM:SS"
+	return `"${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}"`;
 }
 
 function formatDateOnly(value: string, context: IExecuteFunctions, itemIndex: number, label: string): string {
@@ -101,7 +111,7 @@ function buildContactsRdql(
 		const parts: string[] = [];
 		if (hasString(filterDateFrom)) parts.push(`${filterField}:>=${formatRdqlDateTime(filterDateFrom)}`);
 		if (hasString(filterDateTo)) parts.push(`${filterField}:<=${formatRdqlDateTime(filterDateTo)}`);
-		return parts.length > 0 ? parts.join(';') : undefined;
+		return parts.length > 0 ? parts.join(' ') : undefined;
 	}
 
 	// Custom field @<slug>
@@ -140,8 +150,10 @@ function buildListQuery(
 	const sortDirection = context.getNodeParameter('sortDirection', itemIndex, 'asc') as string;
 
 	if (sortField && sortField !== 'none') {
-		const prefix = sortDirection === 'asc' ? '' : '-';
-		qs.sort = `${prefix}${sortField}`;
+		// RD CRM expects deep-object sort syntax: sort[field]=asc|desc
+		qs.sort = {
+			[sortField]: sortDirection === 'desc' ? 'desc' : 'asc',
+		};
 	}
 
 	qs['page[number]'] = pageNumber;

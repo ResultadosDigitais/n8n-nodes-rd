@@ -1,19 +1,10 @@
 import type {
 	ICredentialDataDecryptedObject,
-	IDataObject,
 	IExecuteFunctions,
 	IHookFunctions,
-	IHttpRequestOptions,
 	ILoadOptionsFunctions,
 	IWebhookFunctions,
 } from 'n8n-workflow';
-
-type FullResponse = {
-	body?: unknown;
-	headers?: IDataObject;
-	statusCode?: number;
-	statusMessage?: string;
-};
 
 export type RdCrmEnvironment = 'production' | 'staging';
 
@@ -80,54 +71,4 @@ export async function getRdCrmBaseUrl(
 ): Promise<string> {
 	const environment = await getRdCrmEnvironment(context, itemIndex);
 	return CRM_BASE_URLS[environment];
-}
-
-export async function rdCrmRequest(
-	context: IExecuteFunctions,
-	credentialName: string,
-	options: IHttpRequestOptions,
-): Promise<IDataObject | IDataObject[]> {
-	const req: IHttpRequestOptions = {
-		...options,
-		// Ensure we get { body, statusCode, headers } for consistent error handling.
-		returnFullResponse: true,
-		// Avoid throwing on HTTP errors so we can return debug payloads.
-		ignoreHttpStatusErrors: true,
-	};
-
-	try {
-		const res = (await context.helpers.httpRequestWithAuthentication.call(
-			context,
-			credentialName,
-			req,
-		)) as FullResponse;
-
-		const statusCode = typeof res.statusCode === 'number' ? res.statusCode : null;
-		const body = res.body ?? res;
-
-		// HTTP error: return full debug payload.
-		if (typeof statusCode === 'number' && statusCode >= 400) {
-			return {
-				_error_debug: true,
-				message: `HTTP ${statusCode}`,
-				statusCode,
-				requestUrl: options.url,
-				requestQs: options.qs ?? {},
-				responseBody: body ?? 'No body',
-			} as IDataObject;
-		}
-
-		// Success: return body only.
-		return body as IDataObject | IDataObject[];
-	} catch (error) {
-		// Network/TLS/DNS failure: no statusCode available.
-		const err = (error ?? {}) as { code?: string; message?: string };
-		return {
-			_error_debug: true,
-			message: err?.message ?? 'Request failed (no HTTP response)',
-			requestUrl: options.url,
-			requestQs: options.qs ?? {},
-			errorCode: err?.code ?? null,
-		} as IDataObject;
-	}
 }

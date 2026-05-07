@@ -5,7 +5,7 @@ import type {
 	INodeType,
 	INodeTypeDescription,
 } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 import * as descriptions from './descriptions';
 import * as resources from './resources';
@@ -208,6 +208,9 @@ export class RdStationCrm implements INodeType {
 				if (this.continueOnFail()) {
 					returnData.push({ error: (error as Error).message, itemIndex: i });
 					continue;
+				}
+				if (error instanceof NodeApiError || error instanceof NodeOperationError) {
+					throw error;
 				}
 				throw new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
 			}

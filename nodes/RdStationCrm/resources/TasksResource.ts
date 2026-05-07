@@ -1,6 +1,6 @@
-import type { IDataObject, IExecuteFunctions, IHttpRequestOptions } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
-import { getRdCrmBaseUrl, rdCrmRequest } from '../Helpers';
+import type { IDataObject, IExecuteFunctions, IHttpRequestOptions, JsonObject } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
+import { getRdCrmBaseUrl } from '../Helpers';
 
 type RdCrmListResponse = {
 	data?: IDataObject[];
@@ -142,6 +142,24 @@ function buildListQuery(
 	return qs;
 }
 
+async function rdCrmRequest<T = unknown>(
+	context: IExecuteFunctions,
+	options: IHttpRequestOptions,
+	itemIndex: number,
+): Promise<T> {
+	try {
+		const response = await context.helpers.httpRequestWithAuthentication.call(context, 'rdStationCrmApi', {
+			...options,
+			json: true,
+			returnFullResponse: true,
+		});
+
+		return (response?.body ?? response) as T;
+	} catch (error: unknown) {
+		throw new NodeApiError(context.getNode(), error as JsonObject, { itemIndex });
+	}
+}
+
 function extractDataArray(response: unknown): IDataObject[] {
 	if (isObject(response) && Array.isArray((response as IDataObject).data)) {
 		return (response as IDataObject).data as IDataObject[];
@@ -198,15 +216,11 @@ export async function executeTasks(
 				},
 			};
 
-			const response = await rdCrmRequest(
+			const response = await rdCrmRequest<RdCrmListResponse | IDataObject[] | IDataObject>(
 				context,
-				'rdStationCrmApi',
 				options,
-			) as RdCrmListResponse | IDataObject[] | IDataObject;
-
-			if (isObject(response) && (response as IDataObject)._error_debug) {
-				return response as IDataObject;
-			}
+				itemIndex,
+			);
 
 			const pageData = extractDataArray(response);
 			if (pageData.length === 0) break;
@@ -246,15 +260,11 @@ export async function executeTasks(
 			},
 		};
 
-		const response = await rdCrmRequest(
+		const response = await rdCrmRequest<RdCrmObjectResponse | IDataObject[] | IDataObject>(
 			context,
-			'rdStationCrmApi',
 			options,
-		) as RdCrmObjectResponse | IDataObject[] | IDataObject;
-
-		if (isObject(response) && (response as IDataObject)._error_debug) {
-			return response as IDataObject;
-		}
+			itemIndex,
+		);
 
 		return extractDataObject(response);
 	}
@@ -285,15 +295,11 @@ export async function executeTasks(
 			body: { data: payload },
 		};
 
-		const response = await rdCrmRequest(
+		const response = await rdCrmRequest<RdCrmObjectResponse | IDataObject[] | IDataObject>(
 			context,
-			'rdStationCrmApi',
 			options,
-		) as RdCrmObjectResponse | IDataObject[] | IDataObject;
-
-		if (isObject(response) && (response as IDataObject)._error_debug) {
-			return response as IDataObject;
-		}
+			itemIndex,
+		);
 
 		return extractDataObject(response);
 	}
@@ -331,15 +337,11 @@ export async function executeTasks(
 			body: { data: payload },
 		};
 
-		const response = await rdCrmRequest(
+		const response = await rdCrmRequest<RdCrmObjectResponse | IDataObject[] | IDataObject>(
 			context,
-			'rdStationCrmApi',
 			options,
-		) as RdCrmObjectResponse | IDataObject[] | IDataObject;
-
-		if (isObject(response) && (response as IDataObject)._error_debug) {
-			return response as IDataObject;
-		}
+			itemIndex,
+		);
 
 		return extractDataObject(response);
 	}
